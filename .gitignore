@@ -1,0 +1,5 @@
+.env
+downloads/
+venv/
+auth/credentials.json
+auth/token.json
