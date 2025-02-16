@@ -1,6 +1,8 @@
 import os
 from fastapi import FastAPI, Query
-from auth.oauth import get_auth_url, exchange_code_for_token, get_access_token, get_credentials, refresh_access_token
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from auth.oauth import get_auth_url, exchange_code_for_token, get_credentials, refresh_access_token
 from services.queue_manager import get_task_status
 from services.celery_tasks import download_and_upload_task
 from dotenv import load_dotenv
@@ -10,10 +12,18 @@ load_dotenv()
 
 # Configuración de FastAPI
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Cargar valores por defecto desde .env
 DEFAULT_SOURCE_FOLDER_ID = os.getenv("SOURCE_FOLDER_ID")
 DEFAULT_DESTINATION_FOLDER_ID = os.getenv("DESTINATION_FOLDER_ID")
+
+
+@app.get("/", response_class=HTMLResponse)
+def read_root():
+    """🔹 Sirve el archivo index.html en la ruta principal."""
+    with open("static/index.html") as f:
+        return HTMLResponse(content=f.read(), status_code=200)
 
 
 @app.get("/auth/url")
