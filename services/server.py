@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from auth.oauth import get_auth_url, exchange_code_for_token, get_credentials, refresh_access_token
 from services.queue_manager import get_task_status
-from services.celery_tasks import download_and_upload_task
+from services.celery_tasks import download_and_upload_task, upload_task
 from dotenv import load_dotenv
 
 # Cargar variables de entorno desde .env
@@ -96,18 +96,18 @@ def start_download_and_upload(
     return {"message": "📌 Tarea en cola", "task_id": task.id}
 
 
-@app.get("/tasks/{task_id}")
-def get_task(task_id: str):
-    """
-    📌 Consulta el estado de una tarea en Celery.
+@app.get("/drive/upload")
+def start_upload_task(destination_folder_id: str = Query(None, description="ID de la carpeta destino")):
+    """Inicia la compresión y subida de archivos en segundo plano."""
+    destination_folder_id = destination_folder_id or DEFAULT_DESTINATION_FOLDER_ID
 
-    **Parámetros:**
-    - `task_id`: ID de la tarea en Celery.
+    if not destination_folder_id:
+        return {
+            "error": "❌ No se proporcionó un destination_folder_id y no existen valores predeterminados."
+        }
 
-    **Retorna:**
-    - Estado actual de la tarea.
-    """
-    return get_task_status(task_id)
+    task = upload_task.apply_async(args=[destination_folder_id])
+    return {"message": "📌 Tarea en cola", "task_id": task.id}
 
 
 @app.get("/tasks/{task_id}")

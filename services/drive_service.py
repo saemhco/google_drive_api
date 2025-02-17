@@ -115,6 +115,32 @@ def upload_to_drive(zip_file_path, destination_folder_id=None):
     return uploaded_file.get("id")
 
 
+def upload_file_in_chunks(service, file_path, folder_id):
+    """Sube un archivo a Google Drive en fragmentos."""
+    file_metadata = {
+        'name': os.path.basename(file_path),
+        'parents': [folder_id]
+    }
+
+    # Determinar el tipo MIME
+    mime_type = 'application/zip'
+    chunk_size_bytes = 256 * 1024  # 256 KB
+
+    media = MediaFileUpload(file_path, mimetype=mime_type,
+                            resumable=True, chunksize=chunk_size_bytes)
+    request = service.files().create(body=file_metadata, media_body=media, fields='id')
+
+    response = None
+    while response is None:
+        status, response = request.next_chunk()
+        if status:
+            print(
+                f"Subiendo archivo: {int(status.progress() * 100)}% completado.")
+
+    print(f"✅ Archivo subido correctamente: {response.get('id')}")
+    return response.get('id')
+
+
 def cleanup():
     """Elimina los archivos temporales y la carpeta de descargas."""
     if os.path.exists(TEMP_DOWNLOAD_PATH):
