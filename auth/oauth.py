@@ -14,10 +14,11 @@ SCOPES = ["https://www.googleapis.com/auth/drive",
           "https://www.googleapis.com/auth/drive.file"]
 CREDENTIALS_FILE = os.getenv("CREDENTIALS_PATH", "auth/credentials.json")
 TOKEN_FILE = os.getenv("TOKEN_PATH", "auth/token.json")
-HOST = os.getenv("HOST", "http://127.0.0.1")  # Tomar el HOST de .env
+# Tomar el HOST de .env
+HOST_RETURN = os.getenv("HOST_RETURN", "http://127.0.0.1")
 PORT = int(os.getenv("PORT", 8001))  # Tomar el PUERTO de .env
 # Generamos la redirección correcta
-REDIRECT_URI = f"{HOST}:{PORT}/auth/callback"
+REDIRECT_URI = f"{HOST_RETURN}/auth/callback"
 
 
 def save_token(creds):
